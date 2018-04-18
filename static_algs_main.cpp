@@ -17,17 +17,20 @@ namespace static_alg
         std::cout << std::endl;
     }
 
+    //
     //concatenate two sequences
+    //
     template<typename T1, typename T2> struct concat;
     template<typename T1, typename T2> using concat_t = typename concat<T1, T2>::result;
-
     template<std::size_t... s1n, std::size_t... s2n>
     struct concat<Seq<s1n...>, Seq<s2n...>>
     {
         using result = Seq<s1n..., s2n...>;
     };
 
-    //get the split a subsequence at N
+    //
+    //split a sequence after zero-based index N into two subsequences
+    //
     template<std::size_t N, typename T> struct split_after;
     template<std::size_t N, typename T> using front_t = typename split_after<N, T>::front;
     template<std::size_t N, typename T> using tail_t = typename split_after<N, T>::tail;
@@ -44,10 +47,11 @@ namespace static_alg
         using tail = Seq<s1n...>;
     };
 
+    //
     //merge two sequences
+    //
     template<typename T1, typename T2> struct merge;
     template<typename T1, typename T2> using merge_t = typename merge<T1, T2>::result;
-
     template<std::size_t s1, std::size_t... s1n, std::size_t s2, std::size_t... s2n>
     struct merge<Seq<s1, s1n...>, Seq<s2, s2n...>>
     {
@@ -68,10 +72,11 @@ namespace static_alg
     template<std::size_t... s2n> struct merge<Seq<>, Seq<s2n...>> { using result = Seq<s2n...>; };
     template<> struct merge<Seq<>, Seq<>> { using result = Seq<>; };
 
+    //
     //sort
+    //
     template<typename T> class sort;
     template<typename T> using sort_t = typename sort<T>::result;
-
     template<std::size_t... s1n>
     class sort<Seq<s1n...>>
     {
