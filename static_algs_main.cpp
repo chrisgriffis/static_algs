@@ -5,16 +5,18 @@
 int static_sort_main();
 int my_tuple_main();
 
-constexpr struct foo { int (*_main)(); const char *_name; } labels[] = 
+constexpr struct { int (*_main)(); const char *_name; } labels[] = 
 {
     {&static_sort_main,"static_sort_main"},
     {&my_tuple_main,"my_tuple_main"},
 };
+template<typename T, size_t N>
+constexpr size_t count_of(T (&)[N]){return N;}
 
 int main(int argc, char const *argv[])
 {
     using namespace std;
-    constexpr size_t k(sizeof(labels)/sizeof(foo));
+    constexpr size_t k(count_of(labels));
     
     cout << "Choose a main function:" <<endl;
     for(int i = 0; i < k; ++i)
@@ -49,35 +51,43 @@ int static_sort_main()
 int my_tuple_main()
 {
     using namespace std;
-    my::tuple<int, char, int>
-        tup1(5, 'a', -11);
-    my::tuple<int, int, int, int, int, int>
-        tup2(-2, -1, 0, 1, 2, 3);
-    my::tuple<bool, const char*, void*, size_t>
-        tup3(true, "i am tup3", nullptr, 1);
-    my::tuple<bool, const char*, void*, size_t>
-        tup4; //default construct
-    auto 
-        tup5 = my::make_tuple("hello","tup5",'a','b');
+    constexpr my::tuple<int, char, int>
+        tup1(0, 'a', -11);
 
-    tup3.set<2>(&tup3); //explicit set
-    tup4 = tup3; //copy assign
-    tup3.template get<3>() += 1; //object function call to lvalue access and re-assign
-    my::get<2>(tup4) = &tup4; //lvalue access and re-assign
-    tup4.set<1>("i am tup4");
-    const char* some_text = "some_text";
-
-    cout <<
-        boolalpha <<
-        "rval tuple " << my::tuple<int,bool>(1234, true) <<
-        "make_tuple " << my::make_tuple(543, 'x', "foo") <<
-        "tup1 " << tup1 <<
-        "tup2 " << tup2 <<
-        hex <<
-        "tup3 " << tup3 <<
-        "tup4 " << tup4 <<
-        "tup5 " << tup5 <<
-    endl;
-
-    return 0;
+    return get<0>(tup1);
 }
+// int my_tuple_mainx()
+// {
+//     using namespace std;
+//     my::tuple<int, char, int>
+//         tup1(5, 'a', -11);
+//     my::tuple<int, int, int, int, int, int>
+//         tup2(-2, -1, 0, 1, 2, 3);
+//     my::tuple<bool, const char*, void*, size_t>
+//         tup3(true, "i am tup3", nullptr, 1);
+//     my::tuple<bool, const char*, void*, size_t>
+//         tup4; //default construct
+//     auto 
+//         tup5 = my::make_tuple("hello","tup5",'a','b');
+
+//     tup3.set<2>(&tup3); //explicit set
+//     tup4 = tup3; //copy assign
+//     tup3.template get<3>() += 1; //object function call to lvalue access and re-assign
+//     my::get<2>(tup4) = &tup4; //lvalue access and re-assign
+//     tup4.set<1>("i am tup4");
+//     const char* some_text = "some_text";
+
+//     cout <<
+//         boolalpha <<
+//         "rval tuple " << my::tuple<int,bool>(1234, true) <<
+//         "make_tuple " << my::make_tuple(543, 'x', "foo") <<
+//         "tup1 " << tup1 <<
+//         "tup2 " << tup2 <<
+//         hex <<
+//         "tup3 " << tup3 <<
+//         "tup4 " << tup4 <<
+//         "tup5 " << tup5 <<
+//     endl;
+
+//     return 0;
+// }

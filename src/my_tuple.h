@@ -52,9 +52,10 @@ namespace my
         template< size_t K, typename T>
         struct tuple_elem
         {
-            tuple_elem() = default;
-            tuple_elem(const T& t) :_t(t) {}
-            T& get() { return _t; }
+            constexpr tuple_elem() = default;
+            constexpr tuple_elem(T&& t) :_t(t) {}
+            constexpr auto get() const { return _t; }
+            //auto get() { return _t; }
             void set(T& t) { _t = t; }
         private:
             T _t;
@@ -74,8 +75,9 @@ namespace my
             tuple_elem<Is, Ts>...
         {
             //constructors
-            tuple() = default;
-            tuple(Ts... args) :
+            constexpr tuple() = default;
+
+            constexpr tuple(Ts&&... args) :
                 //ctr initializer list via param pack expansion
                 tuple_elem<Is, Ts>(std::forward<Ts>(args))...
                 //forwarding mechanism preserves cv-unqualified 
@@ -136,7 +138,7 @@ namespace my
     public:
         //constructors
         tuple() = default;
-        tuple(Ts... args) :
+        constexpr tuple(Ts&&... args) :
             //ctr initializer list via param pack expansion
             impl::tuple<
                 detail::make_idx_seq_t<sizeof...(Ts)>,
@@ -146,12 +148,20 @@ namespace my
 
         //element lvalue accessor
         template<size_t Idx>
-        tup_elem_type<Idx>& get()
+        constexpr auto get() const
         {
             //forward call to statically indexed 
             //tuple elem base class
             return tup_elem<Idx>::get();
         }
+
+        // template<size_t Idx>
+        // auto get()
+        // {
+        //     //forward call to statically indexed 
+        //     //tuple elem base class
+        //     return tup_elem<Idx>::get();
+        // }
 
         //element mutator
         template<size_t Idx>
@@ -159,10 +169,11 @@ namespace my
         {
             //forward call to statically indexed 
             //tuple elem base class
-            return tup_elem<Idx>::set(t);;
+            return tup_elem<Idx>::set(t);
         }
 
         //for output to streams
+		//"making new friends" idiom
         friend std::ostream& operator<<(std::ostream& s, tuple& tup)
         {
             //lambda to encapsulate logic for putting the
@@ -171,14 +182,14 @@ namespace my
             {
                 s << "elements: ";
                 //call to empty lambda used to expand param pack
-                [](...) {}(
+                ([](...) {}(
                     //param pack expansion converts "mult args in single call"
                     //to "multiple calls each with single arg"
                     [](std::ostream& s, auto& v)
                     {
                         s << v << " "; return 0; //non-void return type
-                    }(s, args)... //param pack expansion happens here
-                );
+                    }(s, args) //param pack expansion happens here
+                ) , ...); //right-fold expression on comma operator allows unpack in desired order
                 s << std::endl;
             };
 
@@ -191,53 +202,24 @@ namespace my
             return s;
         }
         //an overload to handle putting rvalues into stream
-        friend std::ostream& operator<<(std::ostream& s, tuple&& tup)
+        friend std::ostream& operator<<(std::ostream&& s, tuple&& tup)
         {
             return s << tup;
         }
     };
 
     template<size_t Idx, typename T>
-    auto& get(T& t) { return t.template get<Idx>(); }
+    constexpr auto get(T&& t) { return t.template get<Idx>(); }
 
     template<typename... Ts>
     constexpr tuple<Ts...> make_tuple(Ts&&... args)
     { return tuple<Ts...>(std::forward<Ts>(args)...); }
 }
-
-
 // int main()
 // {
 //     using namespace std;
-//     my::tuple<int, char, int>
-//         tup1(5, 'a', -11);
-//     my::tuple<int, int, int, int, int, int>
-//         tup2(-2, -1, 0, 1, 2, 3);
-//     my::tuple<bool, const char*, void*, size_t>
-//         tup3(true, "i am tup3", nullptr, 1);
-//     my::tuple<bool, const char*, void*, size_t>
-//         tup4; //default construct
-//     auto 
-//         tup5 = my::make_tuple("hello","tup5",'a','b');
+//     constexpr my::tuple<int, char, int>
+//         tup1(0, 'a', -11);
 
-//     tup3.set<2>(&tup3); //explicit set
-//     tup4 = tup3; //copy assign
-//     tup3.template get<3>() += 1; //object function call to lvalue access and re-assign
-//     my::get<2>(tup4) = &tup4; //lvalue access and re-assign
-//     tup4.set<1>("i am tup4");
-//     const char* some_text = "some_text";
-
-//     cout <<
-//         boolalpha <<
-//         "rval tuple " << my::tuple<int,bool>(1234, true) <<
-//         "make_tuple " << my::make_tuple(543, 'x', "foo") <<
-//         "tup1 " << tup1 <<
-//         "tup2 " << tup2 <<
-//         hex <<
-//         "tup3 " << tup3 <<
-//         "tup4 " << tup4 <<
-//         "tup5 " << tup5 <<
-//     endl;
-
-//     return 0;
+//     return get<0>(tup1);
 // }

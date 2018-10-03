@@ -7,7 +7,7 @@ mainfile=static_algs_main.cpp
 #    mainfile=$1
 #fi
 echo building $mainfile
-g++ -std=c++14 $mainfile -o static_algs.out  
+g++ -std=c++17 $mainfile -o static_algs.out  
 # | tee 2> run.log
 # echo '>>> stderr output:' | tee >> run.log
 # echo | tee >> run.log

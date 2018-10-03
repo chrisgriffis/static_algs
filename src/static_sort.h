@@ -1,6 +1,6 @@
 #include <iostream> 
 #include <functional> //for std::conditional
-#include <vector> //for debug output
+#include <initializer_list> //for debug output
 
 namespace my
 {    namespace static_alg
@@ -11,12 +11,7 @@ namespace my
 
         //print sequence metadata
         template<std::size_t... Is>
-        void print(Seq<Is...>)
-        {
-            std::vector<std::size_t> v{ Is... };
-            for (auto e : v) std::cout << e << " ";
-            std::cout << std::endl;
-        }
+        void print(Seq<Is...>) { ((std::cout <<  Is << " "), ...) << std::endl; }
 
         //
         //concatenate two sequences
