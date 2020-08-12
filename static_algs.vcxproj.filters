@@ -27,6 +27,9 @@
     <ClCompile Include="ref_cpp\tuple_apply.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ref_cpp\static_string_demo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\my_tuple.h">

@@ -101,6 +101,7 @@
   <ItemGroup>
     <ClCompile Include="ref_cpp\brute_force_sudoku_solver.cpp" />
     <ClCompile Include="ref_cpp\square_root.cpp" />
+    <ClCompile Include="ref_cpp\static_string_demo.cpp" />
     <ClCompile Include="ref_cpp\tuple_apply.cpp" />
     <ClCompile Include="static_algs_main.cpp" />
   </ItemGroup>
