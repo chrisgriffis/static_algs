@@ -100,7 +100,7 @@ namespace static_alg
 int main_merge_sort()
 {
     using namespace static_alg;
-    using Unsorted = Seq<6, 5, 8, 7, 9, 2, 3, 1, 11>;
+    using Unsorted = Seq<6, 5, 11, 8, 7, 9, 2, 3, 1>;
     using Sorted = sorted_t<Unsorted>;
     print(Unsorted{});
     print(Sorted{});
