@@ -1,5 +1,8 @@
 /*
 Compile-time merge sort example in modern C++
+
+i think this impl is broken. see static_mergesort.h for a working example.
+
 https://github.com/chrisgriffis/static_algs/h/static_sort.h
 Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 SPDX-License-Identifier: MIT
