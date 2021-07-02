@@ -80,7 +80,7 @@ namespace my
     }
 }
 
-int main()
+int square_root_main()
 {
     my::display_sq_root_info_from_0_to_<30>();
     return 0;
