@@ -1,4 +1,7 @@
 /*
+
+i did not make this, i just want to keep it handy so i put it here.
+
 Compile-time string manipulation library for modern C++
 version 1.0.1
 https://github.com/snw1/static-string-cpp
