@@ -4,58 +4,51 @@
 #include <array>
 #include <memory>
 #include <algorithm>
+#include <type_traits>
 using namespace std;
 
 template<typename... field_types>
 struct table_spec;
 
-template<typename table_t, typename... field_types> struct Record;
-template<template <typename...> typename table_spec, typename... field_types>
-struct Record< table_spec<field_types...>, field_types...>
-    : public table_spec<field_types...>
+
+template<typename String, template <typename...> typename table_spec, typename... field_types>
+struct Record
+    : public table_spec<String, field_types...>
 {
-    using table_spec_t = table_spec<field_types...>;
+    using table_spec_t = table_spec<String, field_types...>;
 
     table_spec_t::fields_t m_fields;
 
     Record() = delete;
 
-protected:
+//protected:
     //with args
-    template<typename... field_types_ctor,
-        typename = std::enable_if_t<sizeof...(field_types) == sizeof...(field_types_ctor)>>
-        Record(table_spec_t schema, field_types_ctor... fields) :
+    template<typename String2, typename... field_types_ctor>
+        Record(table_spec<String2, field_types_ctor...> schema, field_types_ctor... fields) :
         table_spec_t{ schema },
         m_fields{ std::make_tuple(fields...) }
     {}
     //with tup
-    template<typename... field_types_ctor,
-        typename = std::enable_if_t<sizeof...(field_types) == sizeof...(field_types_ctor)>>
-        Record(table_spec_t schema, std::tuple<field_types_ctor...> tup) :
-        table_spec<field_types_ctor...>{ schema },
+    template<typename String2, typename... field_types_ctor>
+        Record(table_spec<String2, field_types_ctor...> schema, std::tuple<field_types_ctor...> tup) :
+        table_spec<String2, field_types_ctor...>( schema ),
         m_fields{ tup }
     {}
     //no args
-    template<typename... field_types_ctor,
-        typename = std::enable_if_t<sizeof...(field_types) == sizeof...(field_types_ctor)>>
-        Record(table_spec_t schema) :
-        table_spec<field_types_ctor...>{ schema },
+    template<typename String2, typename... field_types_ctor>
+        Record(table_spec<String2, field_types_ctor...> schema) :
+        table_spec<String2, field_types_ctor...>{ schema },
         m_fields{  }
     {}
     //another rec
-    template<typename... field_types_ctor,
-        typename = std::enable_if_t<sizeof...(field_types) == sizeof...(field_types_ctor)>>
-        Record(const Record< table_spec<field_types...>, field_types_ctor...>& rec) :
-        table_spec<field_types...>{ rec.m_column_headings },
-        m_fields{ rec.m_fields }
+        Record(const Record& rec) :
+        table_spec<String, field_types...>{ rec.m_column_headings },
+        table_spec<String, field_types...>::m_fields{ rec.m_fields }
     {}
 public:
     //with args
-    template<typename... field_types_ctor,
-        typename = std::enable_if_t<sizeof...(field_types) == sizeof...(field_types_ctor)>>
-    static table_spec<field_types_ctor...>
-    create(table_spec_t schema, field_types_ctor... fields)
-    { return table_spec<table_spec_t>(std::forward<field_types_ctor>(fields)...);}
+    static Record create(field_types... fields)
+    { return Record(std::forward<field_types>(fields)...);}
     //with tup
     /*template<typename... field_types_ctor,
         typename = std::enable_if_t<sizeof...(field_types) == sizeof...(field_types_ctor)>>
@@ -73,8 +66,8 @@ public:
     //another rec
     template<typename... field_types_ctor,
         typename = std::enable_if_t<sizeof...(field_types) == sizeof...(field_types_ctor)>>
-        create(const Record< table_spec<field_types...>, field_types_ctor...>& rec) :
-        table_spec<field_types...>{ rec.m_column_headings },
+        create(const Record< table_spec<String, field_types...>, field_types_ctor...>& rec) :
+        table_spec<String, field_types...>{ rec.m_column_headings },
         m_fields{ rec.m_fields }
     {}*/
 
@@ -88,24 +81,17 @@ public:
         return to_lookup(std::index_sequence_for<field_types...>{});
     }
     //from args
-    Record< table_spec_t, field_types...>
-        to_record(field_types... fields) override
+    Record to_record(field_types... fields) override
     {
-        return Record< table_spec_t, field_types...>(*this, fields...);
+        return Record(*this, fields...);
     }
 
-    //no args
-    Record< table_spec_t, field_types...>
-        to_record(table_spec_t schema) override
-    {
-        return Record< table_spec_t, field_types...>(*this);
-    }
+
 
     //from tup
-    Record< table_spec_t, field_types...>
-        to_record(std::tuple<field_types...> tup) override
+    Record to_record(std::tuple<field_types...> tup) override
     {
-        return Record< table_spec_t, field_types...>(*this, tup);
+        return Record(*this, tup);
     }
 
 private:
@@ -120,20 +106,36 @@ private:
     }
 };
 
-
-template<typename String, typename... field_types>
-struct table_spec
+template <typename...> struct L;
+template <typename T> 
+struct L<T>
 {
-    using record_t = Record<table_spec, field_types...>;
+    using type = T;//std::enable_if_t<(std::is_same_v<T,Ts> && ...),T>;
+};
+template <typename T, typename... Ts> 
+struct L<T,Ts...>
+{
+    using type = T;//std::enable_if_t<(std::is_same_v<T,Ts> && ...),T>;
+};
+template< typename String, typename... field_types>
+struct table_spec<String, field_types...>
+{
+    using record_t = Record<String, table_spec, field_types...>;
     using fields_t = std::tuple<field_types...>;
     using column_names_t = const std::array<String, sizeof...(field_types)>;
 
-    column_names_t m_column_names;
+    std::array<String, sizeof...(field_types)> m_column_names;
 
-    template<typename String... str>
-        constexpr table_spec<String, std::remove_reference_t<field_types>>(String... str )
-        : m_column_names{ std::forward<String>(str)... }
+    template<template <typename...> typename L, typename... Strings>
+        table_spec( L<Strings...>, Strings... strs )
+        : m_column_names{ strs... }
     {}
+    table_spec( const table_spec& t )
+        : m_column_names{ t.m_column_names }
+    {}
+    template<typename... Strings>
+    static auto create(Strings... strs)
+    { return table_spec<typename L<Strings...>::type, field_types...>(L<Strings...>{}, strs...); }
 
     template<typename C>
     constexpr std::string to_list(C c, std::string separator = ",")
@@ -150,7 +152,7 @@ struct table_spec
     }
 
     //no args
-    virtual record_t to_record(table_spec schema)
+    virtual record_t to_record()
     {
         return record_t(*this);
     }
@@ -172,8 +174,8 @@ struct table_spec
 };
 
 
-template<template <typename...> typename table_spec, typename... field_types>
-std::ostream& operator<<(std::ostream& s, Record<table_spec<field_types...>, field_types...>  rec)
+template<typename... Ts>
+std::ostream& operator<<(std::ostream& s, Record<Ts...>  rec)
 {
     auto l = rec.to_lookup();
     for_each(l.begin(), l.end(), [&](auto e) {s << e.second; });
@@ -181,27 +183,11 @@ std::ostream& operator<<(std::ostream& s, Record<table_spec<field_types...>, fie
 }
 
 int main() {
-    auto t1 = make_tuple(9, "qwer", "dtyj");
+    //auto t1 = make_tuple(9, "qwer", "dtyj");
     const char* id = "id";
     const char* name = "name";
     const char* type = "type";
-    auto s = table_spec<int, const char*, const char*>(id, name, type);
-    auto x = s.to_record(5, (const char*)"foo", (const char*)"g");
-    cout << s.column_headings_list() << endl;
-    cout << x.column_headings_list() << endl <<
-        x.to_lookup()[id] << "," << x.to_lookup()[name] << "," << x.to_lookup()[type] << endl << endl;
-    auto t2 = make_tuple(-5367, "68o.l", "ayio,u9yilo");
-    auto t3 = make_tuple(67, "487k", "356g");
-    x = t1;
-    cout << x.column_headings_list() << endl <<
-        x.to_lookup()[id] << "," << x.to_lookup()[name] << "," << x.to_lookup()[type] << endl << endl;
-    auto z = s.to_record(x);
-    cout << z.column_headings_list() << endl <<
-        z.to_lookup()[id] << "," << z.to_lookup()[name] << "," << z.to_lookup()[type] << endl << endl;
-    z = t2;
-    cout << z.column_headings_list() << endl <<
-        z.to_lookup()["id"] << "," << z.to_lookup()["name"] << "," << z.to_lookup()["type"] << endl << endl;
-    auto z2 = s.to_record(t3);
-    cout << z2.column_headings_list() << endl << z2 << endl;
+    auto s = table_spec<const char*, int, const char*, const char*>::template create(id, name, type);
+    cout << s.column_headings_list();
     return 0;
 }
