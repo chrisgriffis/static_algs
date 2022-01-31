@@ -50,6 +50,34 @@ protected:
         m_fields{ rec.m_fields }
     {}
 public:
+    //with args
+    template<typename... field_types_ctor,
+        typename = std::enable_if_t<sizeof...(field_types) == sizeof...(field_types_ctor)>>
+    static table_spec<field_types_ctor...>
+    create(table_spec_t schema, field_types_ctor... fields)
+    { return table_spec<table_spec_t>(std::forward<field_types_ctor>(fields)...);}
+    //with tup
+    /*template<typename... field_types_ctor,
+        typename = std::enable_if_t<sizeof...(field_types) == sizeof...(field_types_ctor)>>
+        create(table_spec_t schema, std::tuple<field_types_ctor...> tup) :
+        table_spec<field_types_ctor...>{ schema },
+        m_fields{ tup }
+    {}
+    //no args
+    template<typename... field_types_ctor,
+        typename = std::enable_if_t<sizeof...(field_types) == sizeof...(field_types_ctor)>>
+        create(table_spec_t schema) :
+        table_spec<field_types_ctor...>{ schema },
+        m_fields{  }
+    {}
+    //another rec
+    template<typename... field_types_ctor,
+        typename = std::enable_if_t<sizeof...(field_types) == sizeof...(field_types_ctor)>>
+        create(const Record< table_spec<field_types...>, field_types_ctor...>& rec) :
+        table_spec<field_types...>{ rec.m_column_headings },
+        m_fields{ rec.m_fields }
+    {}*/
+
     Record& operator=(tuple<field_types...>& tup)
     {
         m_fields = tup; return *this;
@@ -93,19 +121,18 @@ private:
 };
 
 
-template<typename... field_types>
+template<typename String, typename... field_types>
 struct table_spec
 {
     using record_t = Record<table_spec, field_types...>;
     using fields_t = std::tuple<field_types...>;
-    using column_names_t = const std::array<const char*, sizeof...(field_types)>;
+    using column_names_t = const std::array<String, sizeof...(field_types)>;
 
     column_names_t m_column_names;
 
-    template<typename... field_types2, typename... Strings,
-        typename = std::enable_if_t<sizeof...(field_types2) == sizeof...(Strings)>>
-        constexpr table_spec<std::remove_reference_t<field_types2>>(Strings... strs)
-        : m_column_names{ std::forward<Strings>(strs)... }
+    template<typename String... str>
+        constexpr table_spec<String, std::remove_reference_t<field_types>>(String... str )
+        : m_column_names{ std::forward<String>(str)... }
     {}
 
     template<typename C>
