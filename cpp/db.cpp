@@ -1,203 +1,13 @@
+//https://wandbox.org/permlink/9YkG1T16igIWrYOw
 #include <iostream>
-#include <map>
-#include <sstream>
-#include <array>
-#include <memory>
-#include <algorithm>
-#include <type_traits>
+#include "db_types.h"
 
 using namespace std;
-
-template<template <typename, typename...> typename, typename, typename...>
-class basic_row_schema;
-
-template<typename String, typename... field_types>
-class single_record : public basic_row_schema<single_record, String, field_types...>
-{
-    template<template <typename, typename...> typename, typename, typename...>
-    friend class basic_row_schema;
-
-    single_record() = delete;
-    single_record& operator=(single_record& rec) = delete;
-    std::tuple<field_types...> m_fields;
-
-    //from args and rec
-    template<std::size_t... Is>
-    single_record(std::index_sequence<Is...>, const single_record& rec, field_types... fields) :
-        basic_row_schema<single_record, String, field_types...>{ rec.m_column_names[Is]... },
-        m_fields{ std::forward_as_tuple(fields...) }
-    {}
-
-    template<std::size_t... Is>
-    single_record(std::index_sequence<Is...>,
-        const basic_row_schema<single_record, String, field_types...>& spec, field_types... fields) :
-        basic_row_schema<single_record, String, field_types...>{ spec.m_column_names[Is]... },
-        m_fields{ std::forward_as_tuple(fields...) }
-    {}
-    template<std::size_t... Is>
-    single_record(std::index_sequence<Is...>,
-        const basic_row_schema<single_record, String, field_types...>& spec) :
-        basic_row_schema<single_record, String, field_types...>{ spec.m_column_names[Is]... },
-        m_fields{ }
-    {}
-    //from another rec
-    template<std::size_t... Is>
-    single_record(std::index_sequence<Is...>, const single_record& rec) :
-        basic_row_schema<single_record, String, field_types...>{ rec.m_column_names[Is]... },
-        m_fields(rec.m_fields)
-    {}
-    template<std::size_t... Is>
-    constexpr std::string values_as_list(std::index_sequence<Is...>, std::string separator = ",")
-    {
-        std::stringstream s;
-        ([&] {s << std::get<Is>(m_fields); if (sizeof...(Is) != Is + 1) { s << separator; }}(), ...);
-        return s.str();
-    }
-public:
-    using row_value_data_t = std::tuple<field_types...>;
-    using basic_row_schema_t = basic_row_schema<single_record, String, field_types...>;
-
-    single_record& operator=(tuple<field_types...>& tup)
-    {
-        m_fields = tup; return *this;
-    }
-    single_record& operator=(tuple<field_types...>&& tup)
-    {
-        m_fields = tup; return *this;
-    }
-
-    constexpr std::tuple<field_types...>& row_values()
-    {
-        return m_fields;
-    }
-    constexpr std::map<String, std::string> to_dictionary()
-    {
-        return to_dictionary(std::index_sequence_for<field_types...>{});
-    }
-
-    constexpr std::string values_as_list()
-    {
-        return values_as_list(std::index_sequence_for<field_types...>{});
-    }
-    //from args
-    single_record to_single_record(field_types... fields)
-    {
-        return single_record(std::index_sequence_for<field_types...>{}, * this, fields...);
-    }
-    single_record to_single_record()
-    {
-        return single_record(std::index_sequence_for<field_types...>{}, * this);
-    }
-
-private:
-    template<std::size_t... Is>
-    constexpr std::map<String, std::string> to_dictionary(std::index_sequence<Is...>)
-    {
-        return std::map<String, std::string>{
-            {
-                basic_row_schema<single_record, String, field_types...>::m_column_names[Is],
-                    [this] { stringstream ss; ss << std::get<Is>(m_fields); return ss.str(); }()
-            }... };
-    }
-};
-
-
-template<template <typename, typename...> typename derived, typename String, typename... field_types>
-class basic_row_schema
-{
-    template<template <typename, typename...> typename, typename, typename...>
-    friend class basic_row_schema;
-    friend class single_record<String, field_types...>;
-
-    const std::array<String, sizeof...(field_types)> m_column_names;
-
-    template<typename... Strings>
-    basic_row_schema(Strings... strs)
-        : m_column_names{ std::decay_t<Strings>(strs)... }
-    {}
-
-    template<std::size_t... Is>
-    basic_row_schema(std::index_sequence<Is...>, const basic_row_schema& t)
-        : m_column_names{ t.m_column_names[Is]... }
-    {}
-    template<std::size_t... Is>
-    basic_row_schema(std::index_sequence<Is...>, const derived<String, field_types...>& r)
-        : m_column_names{ r.basic_row_schema<derived, String, field_types...>::m_column_names[Is]... }
-    {}
-    template<typename C, std::size_t... Is>
-    constexpr std::string to_list(std::index_sequence<Is...>, C c, std::string separator = ",")
-    {
-        std::stringstream s;
-        ([&](auto n) {s << c[n]; if (sizeof...(Is) != n + 1) { s << separator; }}(Is), ...);
-        return s.str();
-    }
-
-public:
-    using row_value_data_t = std::tuple<field_types...>;//typename record_t::row_value_data_t;
-    using column_names_t = const std::array<String, sizeof...(field_types)>;
-
-    template<typename... Strings>
-    static auto create_using_headings(Strings... strs)
-    {
-        return basic_row_schema
-            <derived, std::common_type_t<std::decay_t<Strings>...>, field_types...>
-            (std::decay_t<Strings>(strs)...);
-    }
-
-    constexpr std::string headings_as_list()
-    {
-        return to_list(std::index_sequence_for<field_types...>{}, m_column_names);
-    }
-    constexpr std::string placeholders_as_list(char placeholder = '?')
-    {
-        return to_list(std::vector<char>(sizeof...(field_types), placeholder));
-    }
-
-    //from args
-
-    derived<String, field_types...>
-        to_single_record(field_types... fields)
-    {
-        return derived<String, field_types...>(
-            std::index_sequence_for<field_types...>{}, * this, fields...);
-    }
-    derived<String, field_types...>
-        to_single_record()
-    {
-        return derived<String, field_types...>(
-            std::index_sequence_for<field_types...>{}, * this);
-    }
-};
-
-template< typename... f_types>
-using row_schema_cstr = basic_row_schema<single_record, const char*, f_types...>;
-template< typename... f_types>
-using row_schema = basic_row_schema<single_record, std::string, f_types...>;
-
-template< typename... f_types>
-std::ostream& operator<<(std::ostream& s, single_record< f_types...> rec)
-{
-    s << rec.headings_as_list() << std::endl;
-    s << rec.values_as_list() << std::endl;
-    return s;
-}
-template< typename String2, typename... f_types>
-std::ostream& operator<<(std::ostream& s, basic_row_schema< single_record, String2, f_types...> spec)
-{
-    s << spec.headings_as_list() << std::endl;
-    return s;
-}
-struct unknown_t {};
-std::ostream& operator<<(std::ostream& s, unknown_t) { s << "<unknown-type>"; return s; }
+struct exampleType1 : unknown_t {};
+struct exampleType2 : unknown_t { exampleType1 e1; int x; };
 
 int demo(std::ostream& sout) {
-    using namespace std;
-    struct exampleType1 : unknown_t {};
-    struct exampleType2 : unknown_t {
-        exampleType1 e1;
-        int x;
-    };
-    // auto s = row_schema<int, const char*, const char*>::create_using_headings(id, name, type);
+
     auto schema1 = row_schema<int, const char*, const char*>::
         create_using_headings("id", "name", "type");
     auto schema2 = row_schema<exampleType1, exampleType1, exampleType2, const char*, const char*, int64_t>::
@@ -257,3 +67,73 @@ int demo(std::ostream& sout) {
     return 0;
 }
 int main() { return demo(cout); }
+
+/*
+Start
+schema1 headings:
+id,name,type
+schema2 headings:
+exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
+schema1 single_record serialization:
+id,name,type
+5,d,7
+
+schema1 single_record serialization of factory rval:
+id,name,type
+9,fds,;7$
+
+schema1 single_record serialization of base schema factory rval:
+id,name,type
+2,four,three
+
+schema1 single_record serialization of base schema factory empty rval:
+id,name,type
+0,
+
+dictionary lookup on heading: name: d
+headings_as_list:id,name,type
+
+schema2 single_record serialization:
+exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
+<unknown-type>,<unknown-type>,<unknown-type>,asdfg ,adsfgasdfv,-23623456
+
+schema2 single_record serialization of factory rval:
+exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
+<unknown-type>,<unknown-type>,<unknown-type>,fhjnk re ,468kb67j,-5
+
+schema2 single_record serialization of base schema factory rval:
+exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
+<unknown-type>,<unknown-type>,<unknown-type>,375jyb ety , 3e57j,67
+
+schema2 single_record serialization of base schema factory empty rval:
+exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
+<unknown-type>,<unknown-type>,<unknown-type>,
+
+dictionary lookup on heading: another c_string: adsfgasdfv
+headings_as_list:exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
+
+schema1 single_record operations:
+
+-9 hdk gdj
+id,name,type
+-9,hdk,gdj
+
+-9 hdk gdj
+id,name,type
+-9,hdk,gdj
+
+
+schema2 single_record operations:
+
+-9 hdk gdj
+exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
+<unknown-type>,<unknown-type>,<unknown-type>,fsb ety , 246g2,5
+
+-9 hdk gdj
+exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
+<unknown-type>,<unknown-type>,<unknown-type>,37adfvjyb ety , wyn,7
+
+
+0
+Finish
+*/
