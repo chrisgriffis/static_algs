@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <type_traits>
 
+using namespace std;
+
 template<template <typename, typename...> typename, typename, typename...>
 class basic_row_schema;
 
@@ -135,11 +137,26 @@ public:
     using column_names_t = const std::array<String, sizeof...(field_types)>;
 
     template<typename... Strings>
-    static auto create_using_headings(Strings... strs)
+    static auto 
+    create_using_headings(Strings... strs) -> 
+        enable_if_t< 
+            (is_same_v<Strings,String> && ...),
+            basic_row_schema<derived, String, field_types...>> 
     {
         return basic_row_schema
-            <derived, std::common_type_t<std::decay_t<Strings>...>, field_types...>
-            (std::decay_t<Strings>(strs)...);
+            <derived, String, field_types...>
+            (strs...);
+    }
+    template<typename... Strings>
+    static auto
+    create_using_headings(Strings... strs) -> 
+        enable_if_t< 
+            !(is_same_v<Strings,String> && ...),
+            basic_row_schema<derived, String, field_types...>> 
+    {
+        return basic_row_schema
+            <derived, String, field_types...>
+            (String(std::decay_t<Strings>(strs))...);
     }
 
     constexpr std::string headings_as_list()
