@@ -73,7 +73,7 @@ private:
             {
                      basic_table_spec<basic_record, String, field_types...>::m_column_names[Is],
                     [this] { stringstream ss; ss << std::get<Is>(m_fields); return ss.str(); }()
-            }... };
+          }... };
     }
 };
 
@@ -166,20 +166,15 @@ std::ostream& operator<<(std::ostream& s, basic_record< f_types...> rec)
 }
 
 int main() {
-    //auto t1 = make_tuple(9, "qwer", "dtyj");
-//    const char* id = "id";
-//    const char* name = "name";
-//    const char* type = "type";
-    std::string id{"id"};
-    std::string name{"name"};
-    std::string type{"type"};  
-     auto s = table_spec<int, const char*, const char*>::create(id, name, type);
-//auto s = table_spec<record, int, const char*, const char*>::create(" id"," name", "type");
 
+    // auto s = table_spec<int, const char*, const char*>::create(id, name, type);
+auto s = table_spec<int, const char*, const char*>::
+    create(" id"," name", "type");
+cout << s.column_headings_list() << endl;
     auto r = s.to_record(5,"d","7");
 
-cout << r;
-
+cout << r <<  endl
+     << r.to_record(9,"fds","(3") << endl
+    << s.to_record(2,"","") << endl 
+    << "name: " << r.to_lookup()[" name"] << endl << endl << endl ;
 }
-
-    //auto s = table_spec<record,int, const char*, const char*>("a","b","c");
