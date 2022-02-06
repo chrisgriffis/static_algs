@@ -1,4 +1,3 @@
-//https://wandbox.org/permlink/9YkG1T16igIWrYOw
 #include <iostream>
 #include "db_types.h"
 
@@ -9,8 +8,8 @@ struct exampleType2 : unknown_t { exampleType1 e1; int x; };
 int demo(std::ostream& sout) {
 
     auto schema1 = row_schema<int, const char*, const char*>::
-        create_using_headings("id", "name", "type");
-    auto schema2 = row_schema<exampleType1, exampleType1, exampleType2, const char*, const char*, int64_t>::
+        create_using_headings(string{"id"}, "name", "type");
+    auto schema2 = row_schema_cstr<exampleType1, exampleType1, exampleType2, const char*, const char*, int64_t>::
         create_using_headings("exampleType1", "exampleType1:2", "exampleType2", "a c_string", "another c_string", "int64_t");
 
     sout << "schema1 headings:" << endl << schema1.headings_as_list() << endl;
@@ -67,73 +66,3 @@ int demo(std::ostream& sout) {
     return 0;
 }
 int main() { return demo(cout); }
-
-/*
-Start
-schema1 headings:
-id,name,type
-schema2 headings:
-exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
-schema1 single_record serialization:
-id,name,type
-5,d,7
-
-schema1 single_record serialization of factory rval:
-id,name,type
-9,fds,;7$
-
-schema1 single_record serialization of base schema factory rval:
-id,name,type
-2,four,three
-
-schema1 single_record serialization of base schema factory empty rval:
-id,name,type
-0,
-
-dictionary lookup on heading: name: d
-headings_as_list:id,name,type
-
-schema2 single_record serialization:
-exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
-<unknown-type>,<unknown-type>,<unknown-type>,asdfg ,adsfgasdfv,-23623456
-
-schema2 single_record serialization of factory rval:
-exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
-<unknown-type>,<unknown-type>,<unknown-type>,fhjnk re ,468kb67j,-5
-
-schema2 single_record serialization of base schema factory rval:
-exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
-<unknown-type>,<unknown-type>,<unknown-type>,375jyb ety , 3e57j,67
-
-schema2 single_record serialization of base schema factory empty rval:
-exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
-<unknown-type>,<unknown-type>,<unknown-type>,
-
-dictionary lookup on heading: another c_string: adsfgasdfv
-headings_as_list:exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
-
-schema1 single_record operations:
-
--9 hdk gdj
-id,name,type
--9,hdk,gdj
-
--9 hdk gdj
-id,name,type
--9,hdk,gdj
-
-
-schema2 single_record operations:
-
--9 hdk gdj
-exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
-<unknown-type>,<unknown-type>,<unknown-type>,fsb ety , 246g2,5
-
--9 hdk gdj
-exampleType1,exampleType1:2,exampleType2,a c_string,another c_string,int64_t
-<unknown-type>,<unknown-type>,<unknown-type>,37adfvjyb ety , wyn,7
-
-
-0
-Finish
-*/
