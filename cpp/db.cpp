@@ -78,19 +78,6 @@ private:
 };
 
 
-template <typename...> struct L;
-template <typename T>
-struct L<T>
-{
-    using type = T;//std::enable_if_t<(std::is_same_v<T,Ts> && ...),T>;
-};
-template <typename T, typename... Ts>
-struct L<T, Ts...>
-{
-    using type = T;//std::enable_if_t<(std::is_same_v<T,Ts> && ...),T>;
-};
-//template<typename String, template <typename...> typename record_t, typename... field_types>
-//template<typename String, template <typename,template <typename...> typename,typename...> typename record_t, typename... field_types>
 template<template <typename,typename...> typename derived, typename String, typename... field_types>
 struct basic_table_spec
 {
@@ -116,7 +103,7 @@ public:
     static auto create(Strings... strs)
     {
         return basic_table_spec
-            <derived, typename L<std::decay_t<Strings>...>::type, field_types...>
+            <derived, std::common_type_t<std::decay_t<Strings>...>, field_types...>
             (std::decay_t<Strings>(strs)...);
     }
 
@@ -174,7 +161,7 @@ cout << s.column_headings_list() << endl;
     auto r = s.to_record(5,"d","7");
 
 cout << r <<  endl
-     << r.to_record(9,"fds","(3") << endl
+     << r.to_record(9,"fds",";7$") << endl
     << s.to_record(2,"","") << endl 
     << "name: " << r.to_lookup()[" name"] << endl << endl << endl ;
 }
