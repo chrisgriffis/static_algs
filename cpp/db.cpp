@@ -10,7 +10,7 @@ using namespace std;
 //template<typename String, template <typename,template <typename...> typename,typename...> typename tspec, typename... field_types>
 //template<typename String, template <typename...> typename tspec, typename... field_types>
 template<template <typename,typename...> typename, typename, typename...> 
-struct basic_table_spec;
+class basic_table_spec;
 
 template <typename...> 
 class basic_record;
@@ -49,6 +49,10 @@ template<std::size_t... Is>
     {}    
 
     basic_record& operator=(tuple<field_types...>& tup)
+    {
+        m_fields = tup; return *this;
+    }
+    basic_record& operator=(tuple<field_types...>&& tup)
     {
         m_fields = tup; return *this;
     }
@@ -93,18 +97,22 @@ private:
 
 
 template<template <typename,typename...> typename derived, typename String, typename... field_types>
-struct basic_table_spec
+class basic_table_spec
 {
+    template<template <typename,typename...> typename, typename, typename...> 
+    friend class basic_table_spec;
+    
+    friend class basic_record<String,field_types...>;
     using fields_t = std::tuple<field_types...>;//typename record_t::fields_t;
     using column_names_t = const std::array<String, sizeof...(field_types)>;
 
-    std::array<String, sizeof...(field_types)> m_column_names;
-
+    const std::array<String, sizeof...(field_types)> m_column_names;
+protected:
     template<typename... Strings>
     basic_table_spec(Strings... strs)
         : m_column_names{ std::decay_t<Strings>(strs)... }
     {}
-public:
+
     template<std::size_t... Is>
     basic_table_spec(std::index_sequence<Is...>, const basic_table_spec& t)
         : m_column_names{ t.m_column_names[Is]... }
@@ -113,6 +121,7 @@ public:
     basic_table_spec(std::index_sequence<Is...>, const derived<String, field_types...>& r)
         : m_column_names{ r.basic_table_spec<derived, String, field_types...>::m_column_names[Is]... }
     {}
+  public:
     template<typename... Strings>
     static auto create(Strings... strs)
     {
@@ -178,5 +187,12 @@ cout << r <<  endl
      << r.to_record(9,"fds",";7$") << endl
     << s.to_record(2,"4","3") << endl 
     << "name: " << r.to_lookup()["name"] << endl 
-    << r.column_headings_list() << endl << endl ;
+    << r.column_headings_list() << endl << endl;
+    r = make_tuple(-9,"hdk","gdj");
+    auto& [id, name, type] = r.m_fields;
+    cout << endl<< id << " " << name<< " " << type << endl;
+    std::tuple<int, const char*, const char*> tt(-9,"hdk","gdj");
+    r = tt; cout << r;
+ //   cout << id << " " << name<< " " << type;
+
 }
