@@ -34,6 +34,12 @@ class single_record : public basic_row_schema<single_record, String, field_types
         basic_row_schema<single_record, String, field_types...>{ spec.m_column_names[Is]... },
         m_fields{ std::forward_as_tuple(fields...) }
     {}
+    template<std::size_t... Is>
+    single_record(std::index_sequence<Is...>,
+        const basic_row_schema<single_record, String, field_types...>& spec) :
+        basic_row_schema<single_record, String, field_types...>{ spec.m_column_names[Is]... },
+        m_fields{ }
+    {}
     //from another rec
     template<std::size_t... Is>
     single_record(std::index_sequence<Is...>, const single_record& rec) :
@@ -77,6 +83,10 @@ public:
     single_record to_single_record(field_types... fields)
     {
         return single_record(std::index_sequence_for<field_types...>{}, * this, fields...);
+    }
+    single_record to_single_record()
+    {
+        return single_record(std::index_sequence_for<field_types...>{}, * this);
     }
 
 private:
@@ -151,6 +161,12 @@ public:
         return derived<String, field_types...>(
             std::index_sequence_for<field_types...>{}, * this, fields...);
     }
+    derived<String, field_types...>
+        to_single_record()
+    {
+        return derived<String, field_types...>(
+            std::index_sequence_for<field_types...>{}, * this);
+    }
 };
 
 template< typename... f_types>
@@ -199,6 +215,8 @@ int demo(std::ostream& sout) {
         << r1s1.to_single_record(9, "fds", ";7$") << endl
         << "schema1 single_record serialization of base schema factory rval:" << endl
         << schema1.to_single_record(2, "four", "three") << endl
+        << "schema1 single_record serialization of base schema factory empty rval:" << endl
+        << schema1.to_single_record() << endl
         << "dictionary lookup on heading: name: " << r1s1.to_dictionary()["name"] << endl
         << "headings_as_list:" << r1s1.headings_as_list() << endl << endl;
 
@@ -207,6 +225,8 @@ int demo(std::ostream& sout) {
         << r1s2.to_single_record(exampleType1{}, exampleType1{}, exampleType2{}, "fhjnk re ", "468kb67j", -5) << endl
         << "schema2 single_record serialization of base schema factory rval:" << endl
         << schema2.to_single_record(exampleType1{}, exampleType1{}, exampleType2{}, "375jyb ety ", " 3e57j", 67) << endl
+        << "schema2 single_record serialization of base schema factory empty rval:" << endl
+        << schema2.to_single_record() << endl
         << "dictionary lookup on heading: another c_string: " << r1s2.to_dictionary()["another c_string"] << endl
         << "headings_as_list:" << r1s2.headings_as_list() << endl << endl;
 
@@ -236,4 +256,4 @@ int demo(std::ostream& sout) {
     sout << r1s2 << endl << endl;
     return 0;
 }
-int main(){return demo(cout);}
+int main() { return demo(cout); }
