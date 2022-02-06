@@ -15,12 +15,13 @@ struct basic_table_spec;
 template <typename...> 
 class basic_record;
 template<typename String, typename... field_types>
-class basic_record<String,field_types...> : basic_table_spec<basic_record, String, field_types...>
+class basic_record<String,field_types...> :
+    public basic_table_spec<basic_record, String, field_types...>
 {
     basic_record() = delete;
 public:
     using fields_t = std::tuple<field_types...>;
-
+    using table_spec_t =  basic_table_spec<basic_record, String, field_types...>;
     std::tuple<field_types...> m_fields;
 
 
@@ -55,6 +56,19 @@ template<std::size_t... Is>
     constexpr std::map<String, std::string> to_lookup()
     {
         return to_lookup(std::index_sequence_for<field_types...>{});
+    }
+  template<std::size_t... Is>
+   constexpr std::string value_list(std::index_sequence<Is...>, std::string separator = ",")
+    {
+        std::stringstream s;
+        ([&]{s << std::get<Is>(m_fields); if (sizeof...(Is) != Is + 1) { s << separator; }}(), ...); 
+        return s.str();
+    }
+  
+  
+    constexpr std::string value_list()
+    {
+        return value_list(std::index_sequence_for<field_types...>{});
     }
     //from args
     basic_record to_record(field_types... fields) 
@@ -107,18 +121,17 @@ public:
             (std::decay_t<Strings>(strs)...);
     }
 
-    template<typename C>
-    constexpr std::string to_list(C c, std::string separator = ",")
+    template<typename C, std::size_t... Is>
+    constexpr std::string to_list(std::index_sequence<Is...>, C c, std::string separator = ",")
     {
-        static const std::size_t N = sizeof...(field_types);
         std::stringstream s;
-        for (unsigned int n = 0; n < N; ++n) { s << c[n]; if (N != n + 1) { s << separator; } }
+        ([&](auto n){s << c[n]; if (sizeof...(Is) != n + 1) { s << separator; }}(Is), ...); 
         return s.str();
     }
-
+  
     constexpr std::string column_headings_list()
     {
-        return to_list(m_column_names);
+        return to_list(std::index_sequence_for<field_types...>{},m_column_names);
     }
     constexpr std::string placeholder_list(char placeholder = '?')
     {
@@ -147,8 +160,9 @@ using table_spec = basic_table_spec<basic_record, std::string, f_types...>;
 template< typename... f_types>
 std::ostream& operator<<(std::ostream& s, basic_record< f_types...> rec)
 {
-    auto l = rec.to_lookup();
-    for_each(l.begin(), l.end(), [&](auto e) {s << e.second << " "; });
+    
+    s << rec.column_headings_list() << std::endl;
+    s << rec.value_list() << std::endl;   
     return s;
 }
 
@@ -156,12 +170,13 @@ int main() {
 
     // auto s = table_spec<int, const char*, const char*>::create(id, name, type);
 auto s = table_spec<int, const char*, const char*>::
-    create(" id"," name", "type");
-cout << s.column_headings_list() << endl;
+    create("id","name", "type");
+cout << s.column_headings_list() << endl<<endl;
     auto r = s.to_record(5,"d","7");
 
 cout << r <<  endl
      << r.to_record(9,"fds",";7$") << endl
-    << s.to_record(2,"","") << endl 
-    << "name: " << r.to_lookup()[" name"] << endl << endl << endl ;
+    << s.to_record(2,"4","3") << endl 
+    << "name: " << r.to_lookup()["name"] << endl 
+    << r.column_headings_list() << endl << endl ;
 }
