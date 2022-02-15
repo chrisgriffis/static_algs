@@ -1,3 +1,6 @@
+//https://wandbox.org/permlink/uHjIO3kAUCEsrcVq
+
+//fake stuff to make the demo seem more authentic
 namespace winrt {
     struct hstring { const char* c_str() { return "hstring"; } operator const char* () { return "hstring"; } };
     struct uint32_t { uint32_t() {} uint32_t(unsigned v) { val = v; } unsigned val; operator unsigned() { return val; } };
@@ -6,6 +9,16 @@ namespace winrt {
     struct int64_t { int64_t() {} int64_t(long long int v) { val = v; } long long int val; operator long long int() { return val; } };
 }
 
+/*
+create a database table schema by specifying designated native types for field values, 
+such that a given native type is restricted to those with an extant 
+type-value-conversion-to-database-value-type. any non conformities create a compile 
+error. database row records can only be created as splinters of an existing schema 
+definition and type integrity is enforced. built in utilities allow serialization 
+to output streams.
+*/
+
+//native-to-db type conversion rules
 namespace meta
 {
     namespace is_type {
