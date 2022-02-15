@@ -1,4 +1,4 @@
-//https://wandbox.org/permlink/OVr11fSypfhV41tR
+//https://wandbox.org/permlink/uHjIO3kAUCEsrcVq
 #include <iostream>
 #include "db_types.h"
 
@@ -12,7 +12,7 @@ to output streams.
 */
 
 template<typename... f_types>
-using db_row_schema = basic_row_schema<single_record, meta::is_type::supported, std::string, f_types...>;
+using db_row_schema = row_schema<meta::is_type::supported, f_types...>;
 
 int demo(std::ostream& sout) {
 
