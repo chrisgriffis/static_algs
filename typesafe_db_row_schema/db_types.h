@@ -8,6 +8,16 @@
 #include <type_traits>
 #include "meta.h"
 
+/*
+db_types.h:
+create a database table schema by specifying designated native types for field values, 
+such that a given native type is restricted to those with an extant 
+type-value-conversion-to-database-value-type. any non conformities create a compile 
+error. database row records can only be created as splinters of an existing schema 
+definition and type integrity is enforced. built in utilities allow serialization 
+to output streams.
+*/
+
 using namespace std;
 
 template<template <template <typename> typename, typename, typename...> typename, template <typename> typename, typename, typename...>
