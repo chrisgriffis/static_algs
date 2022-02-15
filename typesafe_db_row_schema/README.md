@@ -8,3 +8,27 @@ https://wandbox.org/permlink/uHjIO3kAUCEsrcVq
 unsupported type compiler error example here
 https://wandbox.org/permlink/xFZnuNDBM4dpiYp8
 
+```
+//...
+
+  auto DB_SCHEMA_PHOTOS = db_row_schema<
+        std::string,    // path;
+        winrt::uint64_t,// folderKey;
+        winrt::uint64_t,// thumbnailCacheId;
+        winrt::uint32_t,// fileAttributes;
+    
+        int,// ProviderKey; "int" IS AN UNSUPPORTED NATIVE FIELD TYPE (per meta.h)
+/*
+db_types.h:62:14: error: 'struct meta::is_type::supported<int>' has no member named 'convert'
+   61 |             Convert<std::remove_reference_t<decltype(std::get<Is>(m_fields))>>{}
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   62 |             .convert(std::get<Is>(m_fields))...);
+      |             ~^~~~~~~
+*/
+        winrt::uint64_t,// itemDate;
+        winrt::uint64_t,// dateModified;
+        winrt::uint32_t,// width;
+        winrt::uint32_t// height;
+    >::create_using_headings(
+//...
+```
