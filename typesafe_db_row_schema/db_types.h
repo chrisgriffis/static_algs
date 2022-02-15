@@ -1,4 +1,4 @@
-//https://wandbox.org/permlink/df8lYQSB7tzbp0Ch
+//https://wandbox.org/permlink/uHjIO3kAUCEsrcVq
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -60,7 +60,7 @@ class single_record : public basic_row_schema<single_record, Convert, String, fi
     {
         return std::make_tuple(
             Convert<std::remove_reference_t<decltype(std::get<Is>(m_fields))>>{}
-        .convert(std::get<Is>(m_fields))...);
+            .convert(std::get<Is>(m_fields))...);
     }
 public:
     using row_value_data_t = std::tuple<field_types...>;
@@ -121,7 +121,7 @@ class basic_row_schema
     template<template <template <typename> typename, typename, typename...> typename a, template <typename> typename b, typename c, typename... d>
     friend class basic_row_schema;
     friend class single_record<Convert, String, field_types...>;
-
+    
     const std::array<String, sizeof...(field_types)> m_column_names;
 
     template<typename... Strings>
@@ -169,21 +169,20 @@ public:
         to_single_record(field_types... fields)
     {
         return derived<Convert, String, field_types...>(
-            std::index_sequence_for<field_types...>{}, * this, fields...);
+            std::index_sequence_for<field_types...>{}, *this, fields...);
     }
     derived<Convert, String, field_types...>
         to_single_record()
     {
         return derived<Convert, String, field_types...>(
-            std::index_sequence_for<field_types...>{}, * this);
+            std::index_sequence_for<field_types...>{}, *this);
     }
-
 };
 
 
 template<template <typename> typename Convert2, typename... f_types>
 using row_schema_cstr = basic_row_schema<single_record, Convert2, const char*, f_types...>;
-template<template <typename> typename Convert2, typename... f_types>
+template<template <typename> typename Convert2,  typename... f_types>
 using row_schema = basic_row_schema<single_record, Convert2, std::string, f_types...>;
 
 template< template <typename> typename Convert2, typename String2, typename... f_types>
@@ -202,8 +201,8 @@ std::ostream& operator<<(std::ostream& s, basic_row_schema< single_record, Conve
 template< typename... f_types>
 std::ostream& operator<<(std::ostream& s, std::tuple< f_types...> tup)
 {
-    std::apply([&s](auto... args) { ((s << args << " "), ...); }, tup);
-    return s;
+        std::apply([&s](auto... args) { ((s << args << " "), ...); },tup);
+        return s;
 }
 struct unknown_t {};
 std::ostream& operator<<(std::ostream& s, unknown_t) { s << "<unknown-type>"; return s; }
