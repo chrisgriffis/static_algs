@@ -16,7 +16,8 @@ using db_row_schema = row_schema<meta::is_type::supported, f_types...>;
 
 int demo(std::ostream& sout) {
 
-    auto DB_SCHEMA_PHOTOS = db_row_schema<
+    auto DB_SCHEMA_PHOTOS = 
+    db_row_schema<
         std::string,    // path;
         winrt::uint64_t,// folderKey;
         winrt::uint64_t,// thumbnailCacheId;
