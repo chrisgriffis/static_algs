@@ -21,12 +21,12 @@ to output streams.
 using namespace std;
 
 template<template <template <typename> typename, typename, typename...> typename, template <typename> typename, typename, typename...>
-class basic_row_schema;
+class basic_row_schema; // CRTP base
 
 template<template <typename> typename Convert, typename String, typename... field_types>
 class single_record //CRTP derived-type
     : public basic_row_schema<single_record, Convert, String, field_types...> 
-    // CRTP base ^^^
+    //CRTP base -> ^^^^^^^^ // ^^^^^^^^^^ <- curious recurrence of derived
 {
     template<template <template <typename> typename, typename, typename...> typename a, template <typename> typename b, typename c, typename... d>
     friend class basic_row_schema;
