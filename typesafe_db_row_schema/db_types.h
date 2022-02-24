@@ -1,4 +1,4 @@
-//https://wandbox.org/permlink/uHjIO3kAUCEsrcVq
+//https://wandbox.org/permlink/QuBEWDKXHz5ztRNb
 #include <iostream>
 #include <map>
 #include <sstream>
