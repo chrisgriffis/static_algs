@@ -5,6 +5,9 @@ in response to a real world scenario, i wanted to see if i could create a databa
 github code:
 https://github.com/chrisgriffis/static_algs/tree/master/typesafe_db_row_schema
 
+the coolest header file I've ever written:
+https://github.com/chrisgriffis/static_algs/blob/master/typesafe_db_row_schema/db_types.h
+
 working example here:
 https://wandbox.org/permlink/uHjIO3kAUCEsrcVq
 
