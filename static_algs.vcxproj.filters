@@ -27,12 +27,33 @@
     <ClCompile Include="ref_cpp\tuple_apply.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cpp\db.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\my_tuple.h">
+    <ClInclude Include="h\db_types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\static_sort.h">
+    <ClInclude Include="h\my_tuple.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="h\static_collatz.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="h\static_integer_square_root.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="h\static_mergesort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="h\static_sort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="h\static_string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="h\stringish.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

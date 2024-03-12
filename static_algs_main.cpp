@@ -1,6 +1,6 @@
 #include <iostream> 
-#include "src/static_sort.h"
-#include "src/my_tuple.h"
+#include "h/static_sort.h"
+#include "h/my_tuple.h"
 
 int static_sort_main();
 int my_tuple_main();
